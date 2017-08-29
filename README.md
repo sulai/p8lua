@@ -21,3 +21,7 @@ print("cpu usage "..stat(1),0,0)
 ```
 
 See the python script for a more in-depth and up to date documentation.
+
+
+For now, p8lua works for linux only, because it uses the python module pyinotify for identifying
+file changes. I'm happy to accept pull requests if some one can port and test it for windows.
