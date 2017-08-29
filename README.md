@@ -1,4 +1,4 @@
-# p8lua - write code in .lua files
+# p8lua - write code for Pico-8 in an external editor
 
 This script helps developing cartridges for Pico-8.
 
