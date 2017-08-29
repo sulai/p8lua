@@ -2,7 +2,7 @@
 """
 
 Prerequisites: Linux and pyinotify.
-               It's a python module for linux to detect file changes.
+               pyinotify is a python module for linux to detect file changes.
                Get it using the command line: sudo pip install pyinotify
 
 NOTE: before using this script BACKUP your files, or use some version control
@@ -26,7 +26,6 @@ Some more sugar:
 
 you can use these commands
 
---#include lib/collisions
 --#define debug
 --#undefine debug
 --#if debug
@@ -47,10 +46,16 @@ removecommentssingle - same as above, but works on single line comments.
 
 plainlua - will convert special pico-8 stuff like += or // into lua.
            you might like this if your IDE/editor only understands plain lua.
-				after conversion into .p8, just delete your .lua file, it will be
-				re-generated from the .p8 file.
-				(never do this without backup or git!!)
-				
+           after conversion into .p8, just delete your .lua file, it will be
+           re-generated from the .p8 file.
+           (never do this without backup or git!!)
+
+Another pre-processor command you might find useful:
+
+--#include lib/collisions
+
+Include lib/collisions.lua, which is a plain copy.
+
 
 """
 
@@ -138,7 +143,7 @@ def process_lua_for_p8(lua):
 			lua_fn = line[11:]
 			with open(lua_fn+".lua") as luaf:
 				lua_include = luaf.read()
-				result+=lua_include
+				result+=lua_include+"\n"
 		else:
 			result+=line+"\n"
 	lua = result
