@@ -33,6 +33,8 @@ you can use these commands
 
 to cut out parts of your code (eg debugging or testing code).
 Of course you can define and use other labels than debug also.
+For example: --#define featurexy to cut out a feature
+(maybe because it's unfinished, or it takes up too much resources).
 
 There are some special definitions you can add to your program using --#define:
 
