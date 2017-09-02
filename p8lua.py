@@ -265,8 +265,12 @@ class Identity(pyinotify.ProcessEvent):
 		if event.pathname.endswith(".lua"):
 			on_lua_changed(event.pathname)
 
-# initialize watching
 
+
+# create lua files for p8 carts, which don't have corresponding lua files yet
+create_lua_from_p8()
+
+# initialize watching on file changes
 wm = pyinotify.WatchManager()
 # Stats is a subclass of ProcessEvent provided by pyinotify
 # for computing basics statistics.
