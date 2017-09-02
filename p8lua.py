@@ -67,7 +67,7 @@ import pyinotify
 import re
 import os
 
-
+from shutil import copyfile
 
 def re_sub_update_operator(op, lua):
 	return re.sub(
@@ -223,6 +223,9 @@ def on_lua_changed(lua_fn):
 	# insert new code
 	result = parse_p8(p8_fn)
 	new_p8_content = result['head'] + lua_content + result['tail']
+
+	# create backup
+	copyfile(p8_fn, p8_fn+".bak")
 
 	# write out new p8
 	with open(p8_fn, "wb") as p8f:
