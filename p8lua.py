@@ -62,7 +62,10 @@ Include lib/collisions.lua, which is a plain copy.
 """
 
 
-import pyinotify
+from datetime import datetime, timedelta
+import time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 import re
 import os
@@ -208,7 +211,7 @@ def on_lua_changed(lua_fn):
 	
 	p8_fn = lua_fn[:-4]+".p8"
 	
-	print "*** processing LUA "+lua_fn
+	print('*** processing LUA ' + lua_fn, flush=True)
 	
 	with open(lua_fn) as luaf:
 		lua_content = luaf.read()
@@ -229,57 +232,71 @@ def on_lua_changed(lua_fn):
 
 	# write out new p8
 	with open(p8_fn, "wb") as p8f:
-		p8f.write(new_p8_content)
+		p8f.write(new_p8_content.encode('utf-8'))
 		
 	
 def create_lua_from_p8():
 	# create .lua files from .p8 files if not yet there
 	for filename in os.listdir("."):
 		if filename.endswith(".p8"):
-			lua_fn = filename[:-3]+".lua"
+			lua_fn = filename[:-3] + '.lua'
 			if not os.path.isfile(lua_fn):
-				print "*** generating .lua file from .p8 file "+lua_fn
+				print('*** generating .lua file from .p8 file ' + lua_fn, flush=True)
 				result = parse_p8(filename)
 				# write out new lua file
 				with open(lua_fn, "wb") as luaf:
-					luaf.write(result['lua'])
+					luaf.write(result['lua'].encode('utf-8'))
 
+# Handle file events
+# timedelta used because events will sometimes be trigged multiple times for some reason
+class Identify(FileSystemEventHandler):
 
-# noinspection PyPep8Naming
-class Identity(pyinotify.ProcessEvent):
-	
-	def process_IN_CREATE(self, event):
-		if event.pathname.endswith(".p8"):
-			create_lua_from_p8()
+    def __init__(self):
+        self.last_modified = datetime.now()
 
-	def process_IN_DELETE(self, event):
-		if event.pathname.endswith(".lua"):
-			create_lua_from_p8()
-	
-	# normal text editor change to the lua file
-	def process_IN_MODIFY(self, event):
-		#print "MODIFY "+event.pathname
-		if event.pathname.endswith(".lua"):
-			on_lua_changed(event.pathname)
+    def on_created(self, event):
+        super(Identify, self).on_created(event)
+        
+        if datetime.now() - self.last_modified < timedelta(seconds=1):
+            return
+        elif not event.is_directory and event.src_path.endswith('.p8'):
+            create_lua_from_p8()
 
-	# Intellij Idea moves stuff when changed
-	def process_IN_MOVED_TO(self, event):
-		#print "MOVED "+event.pathname
-		if event.pathname.endswith(".lua"):
-			on_lua_changed(event.pathname)
+    def on_deleted(self, event):
+        super(Identify, self).on_deleted(event)
 
+        if datetime.now() - self.last_modified < timedelta(seconds=1):
+            return
+        elif not event.is_directory and event.src_path.endswith('.lua'):
+            create_lua_from_p8()
 
+    def on_modified(self, event):
+        super(Identify, self).on_modified(event)
+
+        if datetime.now() - self.last_modified < timedelta(seconds=1):
+            return
+        elif not event.is_directory and event.src_path.endswith('.lua'):
+            on_lua_changed(event.src_path)
+
+    def on_moved(self, event):
+        super(Identify, self).on_moved(event)
+
+        if datetime.now() - self.last_modified < timedelta(seconds=1):
+            return
+        elif not event.is_directory and event.src_path.endswith('.lua'):
+            on_lua_changed(event.src_path)
 
 # create lua files for p8 carts, which don't have corresponding lua files yet
 create_lua_from_p8()
 
-# initialize watching on file changes
-wm = pyinotify.WatchManager()
-# Stats is a subclass of ProcessEvent provided by pyinotify
-# for computing basics statistics.
-s = pyinotify.Stats()
-notifier = pyinotify.Notifier(wm, default_proc_fun=Identity(s))
-wm.add_watch(".",  pyinotify.ALL_EVENTS, rec=True, auto_add=True)
-notifier.loop()
-
-				
+# Setup file observer to catch changes in cwd
+observer = Observer()
+observer.schedule(Identify(), '.', recursive=True)
+observer.start()
+# Loop main thread while the observer thread does its thang
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    observer.stop()
+observer.join()

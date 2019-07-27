@@ -1,5 +1,7 @@
 # p8lua - write code for Pico-8 in an external editor
 
+test
+
 This script helps developing cartridges for Pico-8.
 
 The basic concept is: you edit plain .lua files in your favourite external editor, and when ever you save the .lua file, the script will notice the file change and merge the code back into the .p8 file, so you are instantly ready to use ctrl-R in Pico-8 to reload the cartridge and test your code.
