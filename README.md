@@ -1,7 +1,5 @@
 # p8lua - write code for Pico-8 in an external editor
 
-test
-
 This script helps developing cartridges for Pico-8.
 
 The basic concept is: you edit plain .lua files in your favourite external editor, and when ever you save the .lua file, the script will notice the file change and merge the code back into the .p8 file, so you are instantly ready to use ctrl-R in Pico-8 to reload the cartridge and test your code.
@@ -25,5 +23,4 @@ print("cpu usage "..stat(1),0,0)
 See the python script for a more in-depth and up to date documentation.
 
 
-For now, p8lua works for linux only, because it uses the python module pyinotify for identifying
-file changes. I'm happy to accept pull requests if some one can port and test it for windows.
+p8lua is compatible on Linx, Windows, and Mac.
